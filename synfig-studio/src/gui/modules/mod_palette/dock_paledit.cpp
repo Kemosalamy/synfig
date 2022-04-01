@@ -140,6 +140,17 @@ Dock_PalEdit::Dock_PalEdit():
 		)
 	);
 	action_group->add(Gtk::Action::create(
+		"palette-add-from-clipboard",
+		Gtk::StockID("synfig-hex"),
+		_("Add clipboard color"),
+		_("Add hex color from clipboard")
+	),
+		sigc::mem_fun(
+			*this,
+			&Dock_PalEdit::add_from_clipboard
+		)
+	);
+	action_group->add(Gtk::Action::create(
 		"palette-save",
 		Gtk::StockID("gtk-save"),
 		_("Save palette"),
@@ -180,6 +191,7 @@ Dock_PalEdit::Dock_PalEdit():
 	"<ui>"
 	"	<toolbar action='toolbar-palette'>"
 	"	<toolitem action='palette-add-color' />"
+	"	<toolitem action='palette-add-from-clipboard' />"
 	"	<toolitem action='palette-save' />"
 	"	<toolitem action='palette-load' />"
 	"	<toolitem action='palette-set-default' />"
@@ -329,6 +341,14 @@ Dock_PalEdit::show_menu(int i)
 	item->show_all();
 	menu->append(*item);
 
+	item = manage(new Gtk::ImageMenuItem(Gtk::StockID("synfig-hex")));
+	item->signal_activate().connect(
+		sigc::bind(
+			sigc::mem_fun(*this,&studio::Dock_PalEdit::copy_color),
+			i ));
+	item->show_all();
+	menu->append(*item);
+
 	item = manage(new Gtk::ImageMenuItem(Gtk::StockID("gtk-delete")));
 	item->signal_activate().connect(
 		sigc::bind(
@@ -347,6 +367,68 @@ Dock_PalEdit::add_color(const synfig::Color& x)
 	signal_changed()();
 	refresh();
 	return size()-1;
+}
+
+void
+Dock_PalEdit::add_from_clipboard()
+{
+	if(clipboard_==NULL)
+				clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+	
+	gchar* hexcolor = gtk_clipboard_wait_for_text(clipboard_);
+
+	//Bool to check if the clipboard string is formatted in hexadecimal.  
+	bool hexfrmt = false;
+
+	//Check if clipboard is empty
+	if(hexcolor!=NULL){
+		hexfrmt = true;
+
+		//Check size is correct for the format: #ffffff
+		//Check if first character is a # for the correct format
+		if(strlen(hexcolor)!=7||hexcolor[0]!='#')
+										hexfrmt = false;
+
+
+		//Checking if all characters are between 0-F uppercase or lowercase in ascii
+		for(int i=1;i<7&&hexfrmt;i++){
+			char c = hexcolor[i];
+
+			//    0   -   9  || A   -   Z  || a   -    z
+			if(!((47<c&&c<58)||(64<c&&c<91)||(96<c&&c<123)))
+												hexfrmt = false;
+		}	
+
+	}
+
+	//Clipboard is in hexformat. Add the color.
+	if(hexfrmt){
+		std::string strcol = hexcolor;
+		strcol = strcol.substr(1,6);
+
+		synfig::Color col;
+		col.set_hex(strcol);
+		col.set_a(1.0f);
+
+		palette_.push_back(col);
+	}
+
+	//Free hexcolor string
+	g_free(hexcolor);
+
+	signal_changed()();
+	refresh();
+}
+
+void
+Dock_PalEdit::copy_color(int i)
+{
+	//Taking first 7 characters of the color string as they contain the formated #hexadecimal color
+	GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+	gtk_clipboard_set_text(clipboard, palette_[i].color.get_string().substr(0,7).c_str(), -1);
+
+	signal_changed()();
+	refresh();
 }
 
 void
