@@ -373,7 +373,7 @@ void
 Dock_PalEdit::add_from_clipboard()
 {
 	if(clipboard_==NULL)
-				clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+		clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
 	
 	gchar* hexcolor = gtk_clipboard_wait_for_text(clipboard_);
 
@@ -387,7 +387,7 @@ Dock_PalEdit::add_from_clipboard()
 		//Check size is correct for the format: #ffffff
 		//Check if first character is a # for the correct format
 		if(strlen(hexcolor)!=7||hexcolor[0]!='#')
-										hexfrmt = false;
+			hexfrmt = false;
 
 
 		//Checking if all characters are between 0-F uppercase or lowercase in ascii
@@ -396,7 +396,7 @@ Dock_PalEdit::add_from_clipboard()
 
 			//    0   -   9  || A   -   Z  || a   -    z
 			if(!((47<c&&c<58)||(64<c&&c<91)||(96<c&&c<123)))
-												hexfrmt = false;
+				hexfrmt = false;
 		}	
 
 	}
