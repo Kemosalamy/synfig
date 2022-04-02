@@ -369,6 +369,38 @@ Dock_PalEdit::add_color(const synfig::Color& x)
 	return size()-1;
 }
 
+bool
+Dock_PalEdit::check_hex_format(const gchar* hexcolor)
+{
+	//Check if clipboard is empty
+	if(hexcolor==NULL)
+		return false;
+
+	//Check if first character is a # for the correct format
+	if(hexcolor[0]!='#')
+		return false;
+
+	int strsize = strlen(hexcolor);
+
+	//Check size is correct for the format: #ffffff or #fff or #f
+	//these are the sizes supported by the Color::set_hex() function 
+	if(strsize!=7&&strsize!=4&&strsize!=2)
+		return false;
+
+	//Checking if all characters are between 0-F uppercase or lowercase in ascii
+	for(int i=1;i<strsize;i++){
+		char c = hexcolor[i];
+
+		//    0   -   9  || A   -   F  || a   -    f
+		if(!((47<c&&c<58)||(64<c&&c<71)||(96<c&&c<103)))
+			return false;
+	}	
+
+
+	return true;
+
+}
+
 void
 Dock_PalEdit::add_from_clipboard()
 {
@@ -377,32 +409,8 @@ Dock_PalEdit::add_from_clipboard()
 	
 	gchar* hexcolor = gtk_clipboard_wait_for_text(clipboard_);
 
-	//Bool to check if the clipboard string is formatted in hexadecimal.  
-	bool hexfrmt = false;
-
-	//Check if clipboard is empty
-	if(hexcolor!=NULL){
-		hexfrmt = true;
-
-		//Check size is correct for the format: #ffffff
-		//Check if first character is a # for the correct format
-		if(strlen(hexcolor)!=7||hexcolor[0]!='#')
-			hexfrmt = false;
-
-
-		//Checking if all characters are between 0-F uppercase or lowercase in ascii
-		for(int i=1;i<7&&hexfrmt;i++){
-			char c = hexcolor[i];
-
-			//    0   -   9  || A   -   Z  || a   -    z
-			if(!((47<c&&c<58)||(64<c&&c<91)||(96<c&&c<123)))
-				hexfrmt = false;
-		}	
-
-	}
-
 	//Clipboard is in hexformat. Add the color.
-	if(hexfrmt){
+	if(check_hex_format(hexcolor)){
 		std::string strcol = hexcolor;
 		strcol = strcol.substr(1,6);
 
