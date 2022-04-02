@@ -388,17 +388,11 @@ Dock_PalEdit::check_hex_format(const gchar* hexcolor)
 		return false;
 
 	//Checking if all characters are between 0-F uppercase or lowercase in ascii
-	for(int i=1;i<strsize;i++){
-		char c = hexcolor[i];
-
-		//    0   -   9  || A   -   F  || a   -    f
-		if(!((47<c&&c<58)||(64<c&&c<71)||(96<c&&c<103)))
+	for(int i=1;i<strsize;i++)
+		if(!std::isxdigit(hexcolor[i]))
 			return false;
-	}	
-
 
 	return true;
-
 }
 
 void
