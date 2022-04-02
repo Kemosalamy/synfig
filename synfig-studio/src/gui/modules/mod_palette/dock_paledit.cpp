@@ -370,17 +370,17 @@ Dock_PalEdit::add_color(const synfig::Color& x)
 }
 
 bool
-Dock_PalEdit::check_hex_format(const gchar* hexcolor)
+Dock_PalEdit::check_hex_format(const std::string& hexcolor)
 {
+	int strsize = hexcolor.size();
+
 	//Check if clipboard is empty
-	if(hexcolor==NULL)
+	if(strsize==0)
 		return false;
 
 	//Check if first character is a # for the correct format
 	if(hexcolor[0]!='#')
 		return false;
-
-	int strsize = strlen(hexcolor);
 
 	//Check size is correct for the format: #ffffff or #fff or #f
 	//these are the sizes supported by the Color::set_hex() function 
@@ -398,25 +398,19 @@ Dock_PalEdit::check_hex_format(const gchar* hexcolor)
 void
 Dock_PalEdit::add_from_clipboard()
 {
-	if(clipboard_==NULL)
-		clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-	
-	gchar* hexcolor = gtk_clipboard_wait_for_text(clipboard_);
+	Glib::RefPtr<Gtk::Clipboard> refClipboard = Gtk::Clipboard::get();
+	std::string hexcolor = refClipboard->wait_for_text();
 
 	//Clipboard is in hexformat. Add the color.
 	if(check_hex_format(hexcolor)){
-		std::string strcol = hexcolor;
-		strcol = strcol.substr(1,6);
-
+		hexcolor = hexcolor.substr(1,6);
+		
 		synfig::Color col;
-		col.set_hex(strcol);
+		col.set_hex(hexcolor);
 		col.set_a(1.0f);
 
 		palette_.push_back(col);
 	}
-
-	//Free hexcolor string
-	g_free(hexcolor);
 
 	signal_changed()();
 	refresh();
@@ -426,8 +420,8 @@ void
 Dock_PalEdit::copy_color(int i)
 {
 	//Taking first 7 characters of the color string as they contain the formated #hexadecimal color
-	GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text(clipboard, palette_[i].color.get_string().substr(0,7).c_str(), -1);
+	Glib::RefPtr<Gtk::Clipboard> refClipboard = Gtk::Clipboard::get();
+	refClipboard->set_text(palette_[i].color.get_string().substr(0,7));
 
 	signal_changed()();
 	refresh();

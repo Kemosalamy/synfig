@@ -76,7 +76,7 @@ class Dock_PalEdit : public Dockable
 private:
 	int add_color(const synfig::Color& x);
 	void add_from_clipboard();
-	bool check_hex_format(const gchar* hexcolor);
+	bool check_hex_format(const std::string& hexcolor);
 	void copy_color(int i);
 	void set_color(synfig::Color x, int i);
 	void erase_color(int i);
@@ -85,8 +85,6 @@ private:
 	void select_outline_color(int i);
 	synfig::Color get_color(int i)const;
 	void edit_color(int i);
-
-	GtkClipboard* clipboard_ = NULL;
 
 public:
 	void set_palette(const synfig::Palette& x);
