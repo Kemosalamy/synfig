@@ -374,17 +374,13 @@ Dock_PalEdit::check_hex_format(const std::string& hexcolor)
 {
 	int strsize = hexcolor.size();
 
-	//Check if clipboard is empty
-	if(strsize==0)
+	//Check size is correct for the format: #ffffff or #fff or #f
+	//these are the sizes supported by the Color::set_hex() function 
+	if(strsize!=7&&strsize!=4&&strsize!=2)
 		return false;
 
 	//Check if first character is a # for the correct format
 	if(hexcolor[0]!='#')
-		return false;
-
-	//Check size is correct for the format: #ffffff or #fff or #f
-	//these are the sizes supported by the Color::set_hex() function 
-	if(strsize!=7&&strsize!=4&&strsize!=2)
 		return false;
 
 	//Checking if all characters are between 0-F uppercase or lowercase in ascii
